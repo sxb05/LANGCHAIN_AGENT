@@ -24,6 +24,7 @@ st.caption("Ask questions, search the web, or check the weather.")
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
+GEMINI_3_8_KEY = os.getenv("GEMINI_3.8_KEY")
 
 
 @tool
@@ -65,8 +66,8 @@ def get_agent():
         raise ValueError("GOOGLE_API_KEY is not configured.")
 
     llm = ChatGoogleGenerativeAI(
-        model="gemini-3.6-flash",
-        google_api_key=GOOGLE_API_KEY,
+        model="gemini-3.8-flash",
+        google_api_key= GEMINI_3_8_KEY,
         temperature=0,
     )
 
