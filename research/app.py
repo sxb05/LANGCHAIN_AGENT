@@ -4,6 +4,8 @@ import certifi
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain.agents import create_agent
+from langchain.tools import tool
+import requests
 
 
 
@@ -20,6 +22,7 @@ load_dotenv()
 OPEN_API_KEY = os.getenv("OPEN_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 os.environ["LANGCHAIN_VERBOSE"] = "true"
 os.environ["LANGCHAIN_DEBUG"] = "true"
 
@@ -27,6 +30,21 @@ os.environ["LANGCHAIN_DEBUG"] = "true"
 search_tool = TavilySearchResults(max_results=2)
 result = search_tool.invoke("Give me the latest news on AI and machine learning.")
 result
+
+@tool
+def get_current_weather(location: str) -> str:  
+
+     
+    """Fetch the current temperature and weather description for a given city location."""  
+    url = (f"http://api.weatherstack.com/current?access_key={WEATHER_API_KEY}&query={location}")
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        temperature = data["current"]["temperature"]
+        description = data["current"]["weather_descriptions"]
+        return f"The current weather in {location} is {temperature}°C with {description}."
+    else:       
+        return f"Could not retrieve weather data for {location}. Please check the location name and try again."
 
 
                                                                                                                 # import google.generativeai as genai
@@ -69,12 +87,12 @@ response
 
 agents = create_agent (
     model=llm,
-    tools=[search_tool],
+    tools=[search_tool, get_current_weather],
     system_prompt=system_prompt,
     debug=True
 )
 # Pass the input as a structured state dictionary
-results = agents.invoke({"messages": [("user", "Tell me a joke about AI")]})
+results = agents.invoke({"messages": [("user", "Tell me the current capital city of karnataka and its weather status")]})
 
 # Print the clean text from the final message
 print(results["messages"][-1].content)
