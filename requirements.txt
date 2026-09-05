@@ -12,3 +12,4 @@ langchain-google-genai
 langchain-community
 tavily-python
 python-dotenv
+streamlit
