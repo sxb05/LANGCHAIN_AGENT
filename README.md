@@ -30,6 +30,7 @@ Create and activate a Conda environment, then install the dependencies:
 
 ```bash
 conda create -n lagent python=3.11 -y
+
 conda activate lagent
 pip install -r requirements.txt
 ```
