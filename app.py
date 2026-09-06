@@ -62,12 +62,12 @@ def get_current_weather(location: str) -> str:
 
 @st.cache_resource
 def get_agent():
-    if not GOOGLE_API_KEY:
-        raise ValueError("GOOGLE_API_KEY is not configured.")
+    if not GEMINI_3_8_KEY:
+        raise ValueError("GEMINI_3_8_KEY is not configured.")
 
     llm = ChatGoogleGenerativeAI(
         model="gemini-3.8-flash",
-        google_api_key= GEMINI_3_8_KEY,
+        google_api_key = GEMINI_3_8_KEY,
         temperature=0,
     )
 
@@ -83,8 +83,6 @@ def get_agent():
             "Answer clearly and concisely."
         ),
     )
-
-
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -107,18 +105,23 @@ if prompt:
             with st.spinner("Thinking..."):
                 agent = get_agent()
                 result = agent.invoke(
-                    {"messages": [("user", prompt)]}
+                    {"messages": st.session_state.messages}
                 )
-                answer = result["messages"][-1]
-                if isinstance(answer.content, list) and len(answer.content) > 0:
-                    clean_text = answer.content[0].get("text", "")
-                else:
-                    clean_text = answer.content 
 
-            st.markdown(clean_text)
+                answer = result["messages"][-1].content
+
+                if isinstance(answer, list):
+                    answer = "\n".join(
+                        item.get("text", "")
+                        for item in answer
+                        if isinstance(item, dict)
+                    )
+
+            st.markdown(answer)
             st.session_state.messages.append(
                 {"role": "assistant", "content": answer}
             )
+
         except Exception as error:
             st.error(f"Unable to process your request: {error}")
 
@@ -133,6 +136,54 @@ with st.sidebar:
         "The assistant can answer general questions, search for "
         "current information, and provide weather updates."
     )
+# if "messages" not in st.session_state:
+#     st.session_state.messages = []
+
+# for message in st.session_state.messages:
+#     with st.chat_message(message["role"]):
+#         st.markdown(message["content"])
+
+# prompt = st.chat_input("Ask me anything...")
+
+# if prompt:
+#     st.session_state.messages.append(
+#         {"role": "user", "content": prompt}
+#     )
+
+#     with st.chat_message("user"):
+#         st.markdown(prompt)
+
+#     with st.chat_message("assistant"):
+#         try:
+#             with st.spinner("Thinking..."):
+#                 agent = get_agent()
+#                 result = agent.invoke(
+#                     {"messages": [("user", prompt)]}
+#                 )
+#                 answer = result["messages"][-1]
+#                 if isinstance(answer.content, list) and len(answer.content) > 0:
+#                     clean_text = answer.content[0].get("text", "")
+#                 else:
+#                     clean_text = answer.content 
+
+#             st.markdown(clean_text)
+#             st.session_state.messages.append(
+#                 {"role": "assistant", "content": answer}
+#             )
+#         except Exception as error:
+#             st.error(f"Unable to process your request: {error}")
+
+# with st.sidebar:
+#     st.header("Settings")
+
+#     if st.button("Clear chat", use_container_width=True):
+#         st.session_state.messages = []
+#         st.rerun()
+
+#     st.info(
+#         "The assistant can answer general questions, search for "
+#         "current information, and provide weather updates."
+#     )
 
 
 
